@@ -1,8 +1,6 @@
 import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { CommonModule } from '@angular/common';
-import { ApiServiceProvider } from './services/api.service';
-import { AuthServiceProvider } from './services/auth.service';
 import { ConfigServiceProvider } from './services/config.service';
 import { SocketServiceProvider } from './services/socket.service';
 import { AppComponent } from './app.component';
@@ -22,8 +20,6 @@ import { AppNetworkLineChartComponent } from './components/app-network-line-char
     CommonModule
   ],
   providers: [
-    ApiServiceProvider,
-    AuthServiceProvider,
     ConfigServiceProvider,
     SocketServiceProvider
   ],

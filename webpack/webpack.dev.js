@@ -24,7 +24,7 @@ module.exports = {
         ],
         vendor: [
           '@angular/platform-browser', '@angular/platform-browser-dynamic', '@angular/core',
-          '@angular/common', '@angular/forms', '@angular/http', '@angular/router', 'rxjs'
+          '@angular/common', '@angular/router', 'rxjs', 'd3'
         ]
       },
       dllDir: root('dist/app'),
