@@ -1,7 +1,7 @@
 import { Injectable, Provider } from '@angular/core';
 
 @Injectable()
-export class ConfigService {;
+export class ConfigService {
   wsurl: string;
 
   constructor() {
@@ -9,7 +9,7 @@ export class ConfigService {;
     let port: string = loc.port;
     let protocol = (port === '') ? 'wss://' : 'ws://';
 
-    this.wsurl = `${protocol}${loc.hostname}:10001`;
+    this.wsurl = `${protocol}${loc.hostname}:7210`;
   }
 }
 

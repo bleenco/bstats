@@ -23,6 +23,22 @@ export class SocketServer {
   start(): void {
     this.connections = this.createRxServer(this.options)
       .map(this.createRxSocket);
+
+    this.init();
+  }
+
+  init(): void {
+    this.connections.subscribe(conn => {
+      conn.next({ type: 'status', message: 'connected' });
+
+      conn.subscribe(data => {
+        data = JSON.parse(data);
+
+        if (data.type === 'close') {
+          conn.unsubscribe();
+        }
+      });
+    });
   }
 
   private createRxServer = (options: ws.IServerOptions) => {
@@ -40,7 +56,10 @@ export class SocketServer {
       }
 
       let wss: ws.Server = new ws.Server({ server: app });
-      wss.on('connection', (client: ws) => observer.next(client));
+      wss.on('connection', (client: any) => {
+        observer.next(client);
+        info(`socket client connected from ${client._socket.remoteAddress}:${client._socket.remotePort}`);
+      });
 
       return () => {
         wss.close();
@@ -54,6 +73,7 @@ export class SocketServer {
     }).merge(Observable.create(observer => {
       connection.on('close', () => {
         connection.close();
+        info('socket client disconnected.');
         observer.next(JSON.stringify({ type: 'close' }));
       });
     }));
