@@ -76,7 +76,7 @@ function parseNetstatOutput(data: string): INetworkIface[] {
     .filter((line, i) => !!line && i !== 0)
     .filter(line => {
       let splitted = line.split(/ +/);
-      return platform() === 'darwin' ? splitted[3].includes('.') : parseInt(splitted[4], 10) > 0;
+      return platform() === 'darwin' ? splitted[3].includes('.') : parseInt(splitted[3], 10) > 0;
     })
     .map(line => {
       let splitted = line.split(/ +/);
