@@ -6,7 +6,7 @@ import * as d3 from 'd3';
   templateUrl: 'app-cpu-pie.component.html'
 })
 export class AppCpuPieComponent implements OnInit, OnChanges {
-  @Input() value: any[];
+  @Input() value: any;
 
   colors: string[];
   pieChartEl: HTMLElement;
@@ -32,20 +32,10 @@ export class AppCpuPieComponent implements OnInit, OnChanges {
       return;
     }
 
-    this.data = this.value.reduce((acc, curr, i) => {
-      if (!acc.length) {
-        acc[0] = { label: 'idle', value: parseFloat(curr.idle), color: this.colors[0] };
-        acc[1] = { label: 'usage', value: parseFloat(curr.usage), color: this.colors[4] };
-      } else {
-        acc[0] = { label: 'idle', value: acc[0].value + parseFloat(curr.idle), color: this.colors[0] };
-        acc[1] = { label: 'usage', value: acc[1].value + parseFloat(curr.usage), color: this.colors[4] };
-      }
-
-      return acc;
-    }, []).map(cpu => {
-      cpu.value = cpu.value / this.value.length;
-      return cpu;
-    });
+    this.data = [
+      { label: 'Load', value: this.value.load, color: this.colors[2] },
+      { label: 'Idle', value: this.value.idle, color: this.colors[1] }
+    ];
 
     if (!this.svg) {
       this.render();
@@ -89,8 +79,7 @@ export class AppCpuPieComponent implements OnInit, OnChanges {
   change = () => {
     this.pie.value((d: any, i: number) => this.data[i].value);
     this.path = this.path.data(this.pie);
-    this.path.transition().duration(1000).attrTween('d', arcTween);
-
+    this.path.transition().duration(2000).attrTween('d', arcTween);
     let arc = this.arc;
 
     function arcTween(a) {

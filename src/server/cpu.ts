@@ -4,35 +4,64 @@ import { IOutput } from './socket';
 
 export interface ICpuData {
   idle: number;
-  irq: number;
-  nice: number;
-  sys: number;
-  user: number;
-  usage?: number;
+  total: number;
+  cores: Object[]
 }
 
 export function cpu(): Observable<IOutput> {
   return Observable.timer(0, 2000)
     .timeInterval()
-    .mergeMap(() => cpuUsage())
+    .mergeMap(() => cpuLoad())
     .map((res: ICpuData) => {
       return { type: 'cpu', data: res };
     });
 }
 
-function cpuUsage(): Promise<ICpuData> {
+function cpuLoad(): Promise<ICpuData> {
   return new Promise(resolve => {
-    let cpuData = cpus();
-    let data = cpuData.map(cpu => {
-      let total = Object.keys(cpu.times).reduce((acc, curr) => acc + cpu.times[curr], 0);
+    let start = cpuAverage();
 
-      return Object.keys(cpu.times).reduce((acc, curr) => {
-        return Object.assign(acc, { [curr]: parseFloat(<any>(cpu.times[curr] / total * 100)).toFixed(2) });
-      }, {});
-    }).map((cpu: ICpuData) => {
-      return Object.assign(cpu, { usage: parseFloat(<any>(100 - cpu.idle)).toFixed(2) });
-    });
+    setTimeout(() => {
+      let end = cpuAverage();
+      let idleDiff = end.idle - start.idle;
+      let totalDiff = end.total - start.total;
 
-    resolve(data);
+      let cores = end.cores.map((core, i) => {
+        return {
+          idle: start.cores[i].idle - core.idle,
+          total: start.cores[i].total - core.total
+        };
+      });
+
+      let percentage = 100 - parseInt(<any>(100 * idleDiff / totalDiff), 10);
+      let data = { load: percentage, idle: 100 - percentage, cores: cores };
+
+      resolve(data);
+    }, 2000);
   });
+}
+
+function cpuAverage(): { idle: number, total: number, cores: { idle: number, total: number }[] } {
+  let totalIdle = 0;
+  let totalTick = 0;
+  let cpuData = cpus();
+
+  let data = cpuData.map(core => {
+    let coreTotal = Object.keys(core.times).reduce((acc, curr) => acc + core.times[curr], 0);
+    let coreIdle = core.times.idle;
+
+    return { idle: coreIdle, total: coreTotal };
+  }).reduce((acc, curr) => {
+    acc.idle += curr.idle;
+    acc.total += curr.total;
+    acc.cores.push(curr);
+
+    return acc;
+  }, { idle: 0, total: 0, cores: [] });
+
+  return {
+    idle: data.idle / data.cores.length,
+    total: data.total / data.cores.length,
+    cores: data.cores
+  };
 }
