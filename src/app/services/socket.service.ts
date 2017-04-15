@@ -1,6 +1,6 @@
 import { Injectable, Provider } from '@angular/core';
 import { Observable, Subject, BehaviorSubject, Subscriber, Subscription } from 'rxjs';
-import { RxWebSocket } from './RxWebSocket';
+import { RxWebSocket } from './rx-web-socket';
 
 export enum ConnectionStates {
   CONNECTING,

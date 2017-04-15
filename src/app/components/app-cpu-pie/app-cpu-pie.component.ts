@@ -45,7 +45,7 @@ export class AppCpuPieComponent implements OnInit, OnChanges {
   }
 
   render() {
-    this.r = 151;
+    this.r = 152;
     let w = this.r * 2;
     let h = this.r * 2;
 
