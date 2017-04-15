@@ -4,12 +4,18 @@ import { info } from './logger';
 import * as http from 'http';
 import * as https from 'https';
 import { readFileSync } from 'fs';
+import { network, INetworkIface } from './network';
 
 export interface ISocketServerOptions {
   port: number;
   ssl: boolean;
   sslKey?: string;
   sslCert?: string;
+}
+
+export interface IOutput {
+  type: 'network' | 'loadavg';
+  data: INetworkIface[]
 }
 
 export class SocketServer {
@@ -31,10 +37,14 @@ export class SocketServer {
     this.connections.subscribe(conn => {
       conn.next({ type: 'status', message: 'connected' });
 
+      let sub = Observable.merge(...[network()])
+        .subscribe((data: IOutput) => conn.next(data));
+
       conn.subscribe(data => {
         data = JSON.parse(data);
 
         if (data.type === 'close') {
+          sub.unsubscribe();
           conn.unsubscribe();
         }
       });
@@ -72,9 +82,9 @@ export class SocketServer {
       return typeof msg.data === 'string' ? msg.data : JSON.parse(msg.data);
     }).merge(Observable.create(observer => {
       connection.on('close', () => {
+        observer.next(JSON.stringify({ type: 'close' }));
         connection.close();
         info('socket client disconnected.');
-        observer.next(JSON.stringify({ type: 'close' }));
       });
     }));
 

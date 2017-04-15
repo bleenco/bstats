@@ -7,13 +7,15 @@ import { AppComponent } from './app.component';
 import { AppStatsComponent } from './components/app-stats';
 import { AppCpuLineChartComponent } from './components/app-cpu-line-chart';
 import { AppNetworkLineChartComponent } from './components/app-network-line-chart';
+import { AppCpuPieComponent } from './components/app-cpu-pie';
 
 @NgModule({
   declarations: [
     AppComponent,
     AppStatsComponent,
     AppCpuLineChartComponent,
-    AppNetworkLineChartComponent
+    AppNetworkLineChartComponent,
+    AppCpuPieComponent
   ],
   imports: [
     BrowserModule,
