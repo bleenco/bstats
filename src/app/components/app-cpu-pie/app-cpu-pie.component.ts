@@ -24,7 +24,7 @@ export class AppCpuPieComponent implements OnInit, OnChanges {
 
   ngOnInit() {
     this.pieChartEl = this.elementRef.nativeElement.querySelector('.pie-chart-container');
-    this.colors = ['#438FCC', '#88C340', '#DA031B', '#6E7F9A', '#FFC356', '#65DBFF', '#999999', '#666666'];
+    this.colors = ['#65DBFF', '#E9EAEC', '#438FCC', '#88C340', '#DA031B', '#6E7F9A', '#FFC356', '#65DBFF', '#999999', '#666666'];
   }
 
   ngOnChanges(changes: SimpleChanges) {
@@ -33,7 +33,7 @@ export class AppCpuPieComponent implements OnInit, OnChanges {
     }
 
     this.data = [
-      { label: 'Load', value: this.value.load, color: this.colors[2] },
+      { label: 'Load', value: this.value.load, color: this.colors[0] },
       { label: 'Idle', value: this.value.idle, color: this.colors[1] }
     ];
 
@@ -45,14 +45,14 @@ export class AppCpuPieComponent implements OnInit, OnChanges {
   }
 
   render() {
-    let w = this.pieChartEl.clientWidth;
-    let h = this.pieChartEl.clientHeight;
-    this.r = 160;
+    this.r = 151;
+    let w = this.r * 2;
+    let h = this.r * 2;
 
-    this.svg = d3.select(this.pieChartEl).select('.pie-chart').append('svg').attr('width', w).attr('height', h);
+    this.svg = d3.select(this.pieChartEl).select('.pie-chart').append('svg').attr('width', this.r * 2).attr('height', this.r * 2);
 
     this.g = this.svg.append('g')
-      .attr('transform', 'translate(200, 200)');
+      .attr('transform', `translate(${this.r / 2}, ${this.r / 2})`);
 
     this.defs = this.svg.append('defs');
 
@@ -70,7 +70,7 @@ export class AppCpuPieComponent implements OnInit, OnChanges {
     this.path = this.svg.datum(this.data).selectAll('path')
       .data(this.pie)
       .enter().append('path')
-      .attr('transform', 'translate(200, 200)')
+      .attr('transform', `translate(${this.r}, ${this.r})`)
       .attr('fill', (d: any, i: number) => `url(#pie-gradient-${i}`)
       .attr('d', this.arc)
       .each(function(d) { this._current = d; });

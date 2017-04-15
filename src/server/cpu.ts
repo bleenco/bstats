@@ -23,16 +23,20 @@ function cpuLoad(): Promise<ICpuData> {
 
     setTimeout(() => {
       let end = cpuAverage();
-      let idleDiff = end.idle - start.idle;
-      let totalDiff = end.total - start.total;
 
       let cores = end.cores.map((core, i) => {
+        let coreIdleDiff = core.idle - start.cores[i].idle;
+        let coreTotalDiff = end.total - start.total;
+        let corePercentage = 100 - parseInt(<any>(100 * coreIdleDiff / coreTotalDiff), 10);
+
         return {
-          idle: start.cores[i].idle - core.idle,
-          total: start.cores[i].total - core.total
+          idle: 100 - corePercentage,
+          total: corePercentage
         };
       });
 
+      let idleDiff = end.idle - start.idle;
+      let totalDiff = end.total - start.total;
       let percentage = 100 - parseInt(<any>(100 * idleDiff / totalDiff), 10);
       let data = { load: percentage, idle: 100 - percentage, cores: cores };
 
