@@ -39,7 +39,26 @@
         fill: none
         stroke: none
 
-.pie-chart
+.pie-chart-container
   width: 100%
-  height: 380px
-  display: block
+  height: 440px
+
+  h2
+    color: $dark
+    font-size: 12px
+    padding: 5px 10px
+    border-left: 1px solid $border
+    border-right: 1px solid $border
+    border-top: 1px solid $border
+
+  .pie-chart
+    width: 100%
+    height: 400px
+    margin: 0 auto
+    border: 1px solid $border
+    display: block
+
+    svg
+      width: 400px
+      margin: 0 auto
+      display: block
