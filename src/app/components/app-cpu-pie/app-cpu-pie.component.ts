@@ -1,11 +1,14 @@
-import { Component, ElementRef, OnInit } from '@angular/core';
+import { Component, ElementRef, OnInit, Input, OnChanges, SimpleChanges } from '@angular/core';
 import * as d3 from 'd3';
 
 @Component({
   selector: 'app-cpu-pie',
   templateUrl: 'app-cpu-pie.component.html'
 })
-export class AppCpuPieComponent implements OnInit {
+export class AppCpuPieComponent implements OnInit, OnChanges {
+  @Input() value: any[];
+
+  colors: string[];
   pieChartEl: HTMLElement;
   svg: any;
   g: any;
@@ -21,7 +24,34 @@ export class AppCpuPieComponent implements OnInit {
 
   ngOnInit() {
     this.pieChartEl = this.elementRef.nativeElement.querySelector('.pie-chart-container');
-    this.render();
+    this.colors = ['#438FCC', '#88C340', '#DA031B', '#6E7F9A', '#FFC356', '#65DBFF', '#999999', '#666666'];
+  }
+
+  ngOnChanges(changes: SimpleChanges) {
+    if (!this.value) {
+      return;
+    }
+
+    this.data = this.value.reduce((acc, curr, i) => {
+      if (!acc.length) {
+        acc[0] = { label: 'idle', value: parseFloat(curr.idle), color: this.colors[0] };
+        acc[1] = { label: 'usage', value: parseFloat(curr.usage), color: this.colors[4] };
+      } else {
+        acc[0] = { label: 'idle', value: acc[0].value + parseFloat(curr.idle), color: this.colors[0] };
+        acc[1] = { label: 'usage', value: acc[1].value + parseFloat(curr.usage), color: this.colors[4] };
+      }
+
+      return acc;
+    }, []).map(cpu => {
+      cpu.value = cpu.value / this.value.length;
+      return cpu;
+    });
+
+    if (!this.svg) {
+      this.render();
+    } else {
+      this.change();
+    }
   }
 
   render() {
@@ -35,18 +65,6 @@ export class AppCpuPieComponent implements OnInit {
       .attr('transform', 'translate(200, 200)');
 
     this.defs = this.svg.append('defs');
-
-    this.data = [
-      {label:"Basic", color:"#438FCC"},
-      {label:"Plus", color:"#88C340"},
-      {label:"Lite", color:"#DA031B"},
-      {label:'Aloha', color: '#6E7F9A'},
-      {label:"Elite", color:"#FFC356"},
-      {label:"Delux", color:"#65DBFF"},
-      {label:'Haloha', color: '#65DBFF'},
-    ].map(d => {
-      return { label: d.label, value: 1000 * Math.random(), color: d.color };
-    });
 
     this.pie = d3.pie().sort(null).value((d: any) => d.value);
     this.arc = d3.arc()
@@ -66,20 +84,12 @@ export class AppCpuPieComponent implements OnInit {
       .attr('fill', (d: any, i: number) => `url(#pie-gradient-${i}`)
       .attr('d', this.arc)
       .each(function(d) { this._current = d; });
-
-    setTimeout(() => {
-      this.change();
-    }, 2000);
   }
 
   change = () => {
-    this.data = this.data.map(d => {
-      return { label: d.label, value: 1000 * Math.random(), color: d.color };
-    });
-
     this.pie.value((d: any, i: number) => this.data[i].value);
     this.path = this.path.data(this.pie);
-    this.path.transition().duration(2000).attrTween('d', arcTween);
+    this.path.transition().duration(1000).attrTween('d', arcTween);
 
     let arc = this.arc;
 

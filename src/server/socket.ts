@@ -5,6 +5,7 @@ import * as http from 'http';
 import * as https from 'https';
 import { readFileSync } from 'fs';
 import { network, INetworkIface } from './network';
+import { cpu, ICpuData } from './cpu';
 
 export interface ISocketServerOptions {
   port: number;
@@ -14,8 +15,8 @@ export interface ISocketServerOptions {
 }
 
 export interface IOutput {
-  type: 'network' | 'loadavg';
-  data: INetworkIface[]
+  type: string;
+  data: INetworkIface[] | ICpuData;
 }
 
 export class SocketServer {
@@ -37,7 +38,7 @@ export class SocketServer {
     this.connections.subscribe(conn => {
       conn.next({ type: 'status', message: 'connected' });
 
-      let sub = Observable.merge(...[network()])
+      let sub = Observable.merge(...[network(), cpu()])
         .subscribe((data: IOutput) => conn.next(data));
 
       conn.subscribe(data => {

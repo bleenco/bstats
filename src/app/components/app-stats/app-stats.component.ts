@@ -12,13 +12,15 @@ export class AppStatsComponent implements OnInit, OnDestroy {
   loadAvg5Min: { load: number, cores: number };
   loadAvg15Min: { load: number, cores: number };
   netData: any[];
+  cpuData: any[];
 
   constructor(private socket: SocketService) { }
 
   ngOnInit() {
     this.messages = this.socket.onMessage()
       .subscribe((output: { type: string, data: any }) => {
-      if (output.type === 'loadavg') {
+      if (output.type === 'cpu') {
+        this.cpuData = output.data;
         // this.loadAvg1Min = null;
         // this.loadAvg5Min = null;
         // this.loadAvg15Min = null;
