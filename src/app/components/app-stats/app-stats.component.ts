@@ -26,15 +26,6 @@ export class AppStatsComponent implements OnInit, OnDestroy {
 
         if (output.type === 'cpu') {
           this.cpuData = output.data;
-          // this.loadAvg1Min = null;
-          // this.loadAvg5Min = null;
-          // this.loadAvg15Min = null;
-
-          // setTimeout(() => {
-          //   this.loadAvg1Min = { load: data.message.load[0], cores: data.message.cores };
-          //   this.loadAvg5Min = { load: data.message.load[1], cores: data.message.cores };
-          //   this.loadAvg15Min = { load: data.message.load[2], cores: data.message.cores };
-          // });
         } else if (output.type === 'network') {
           if (!this.netData) {
             this.netData = output.data;

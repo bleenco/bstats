@@ -42,7 +42,7 @@ npm run start # this starts UI development
 ### Preview
 
 <p align="center">
-  <img src="https://cloud.githubusercontent.com/assets/1796022/25066983/efaf6e98-2235-11e7-8f39-06814b66a260.png" width="700">
+  <img src="https://user-images.githubusercontent.com/1796022/27514376-0014a7f0-5989-11e7-9ff2-06768014ef1e.png" width="700">
 </p>
 
 ### Licence

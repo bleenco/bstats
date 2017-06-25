@@ -73,10 +73,11 @@ function netstat(args: string[]): Promise<string> {
 function parseNetstatOutput(data: string): INetworkIface[] {
   return data
     .split('\n')
-    .filter((line, i) => !!line && i !== 0)
+    .filter((line, i) => !!line)
+    .filter(line => !line.match('RX'))
     .filter(line => {
       let splitted = line.split(/ +/);
-      return platform() === 'darwin' ? splitted[3].includes('.') : parseInt(splitted[3], 10) > 0;
+      return platform() === 'darwin' ? splitted[3].includes('.') : parseInt(splitted[2], 10) > 0;
     })
     .map(line => {
       let splitted = line.split(/ +/);
@@ -84,8 +85,8 @@ function parseNetstatOutput(data: string): INetworkIface[] {
       let iface = splitted[0].trim();
       let address = platform() === 'darwin' ? splitted[3].trim() : '';
       let mtu = parseInt(splitted[1], 10);
-      let rx = platform() === 'darwin' ? parseInt(splitted[4], 10) : parseInt(splitted[3], 10);
-      let tx = platform() === 'darwin' ? parseInt(splitted[6], 10) : parseInt(splitted[7], 10);
+      let rx = platform() === 'darwin' ? parseInt(splitted[4], 10) : parseInt(splitted[2], 10);
+      let tx = platform() === 'darwin' ? parseInt(splitted[6], 10) : parseInt(splitted[6], 10);
 
       return {
         iface: iface,

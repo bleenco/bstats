@@ -10,6 +10,7 @@ export class AppNetworkLineChartComponent implements OnInit, OnChanges {
   @Input() speedIn: number;
   @Input() speedOut: number;
 
+  href: string;
   lineChartEl: HTMLElement;
   svg: any;
   g: any;
@@ -32,6 +33,7 @@ export class AppNetworkLineChartComponent implements OnInit, OnChanges {
   loaded: boolean;
 
   constructor(private elementRef: ElementRef) {
+    this.href = document.location.href;
     this.loaded = false;
   }
 
@@ -46,6 +48,10 @@ export class AppNetworkLineChartComponent implements OnInit, OnChanges {
   ngOnChanges(changes: SimpleChanges) {
     if (!this.loaded || this.speedIn === null || this.speedOut === null) {
       return;
+    }
+
+    if (!this.title) {
+      this.title = this.iface;
     }
 
     this.updateData(this.speedIn, this.speedOut);
@@ -97,20 +103,63 @@ export class AppNetworkLineChartComponent implements OnInit, OnChanges {
       .attr('class', 'y axis')
       .call(this.yAxis);
 
-    this.line = d3.line()
+    let defs = this.svg.append('defs');
+
+    let gradient = defs.append('linearGradient')
+      .attr('id', 'svgGradient')
+      .attr('x1', '0%')
+      .attr('x2', '0%')
+      .attr('y1', '0%')
+      .attr('y2', '100%');
+
+    gradient.append('stop')
+      .attr('class', 'start')
+      .attr('offset', '0%')
+      .attr('stop-color', '#359b9c')
+      .attr('stop-opacity', 0.9);
+
+    gradient.append('stop')
+      .attr('class', 'end')
+      .attr('offset', '100%')
+      .attr('stop-color', '#359b9c')
+      .attr('stop-opacity', 0);
+
+    let gradient2 = defs.append('linearGradient')
+      .attr('id', 'svgGradient2')
+      .attr('x1', '0%')
+      .attr('x2', '0%')
+      .attr('y1', '0%')
+      .attr('y2', '100%');
+
+    gradient2.append('stop')
+      .attr('class', 'start')
+      .attr('offset', '0%')
+      .attr('stop-color', '#925841')
+      .attr('stop-opacity', 0.9);
+
+    gradient2.append('stop')
+      .attr('class', 'end')
+      .attr('offset', '100%')
+      .attr('stop-color', '#925841')
+      .attr('stop-opacity', 0);
+
+    this.line = d3.area()
       .x((d: any, i: number) => this.x(<any>this.now - (this.limit - 1 - i) * this.duration))
-      .y((d: any) => this.y(d))
+      .y0(h)
+      .y1((d: any) => this.y(d))
       .curve(d3.curveBasis);
 
     this.pathIn = this.g.append('path')
       .attr('stroke', '#359b9c')
       .attr('stroke-width', '3')
-      .attr('fill', 'transparent');
+      .attr('fill', `url(${this.href}#svgGradient)`)
+      .attr('transform', `translate(${this.x(<any>this.now - (this.limit - 1) * this.duration)}, 0)`);;
 
     this.pathOut = this.g.append('path')
       .attr('stroke', '#925841')
       .attr('stroke-width', '3')
-      .attr('fill', 'transparent');
+      .attr('fill', `url(${this.href}#svgGradient2)`)
+      .attr('transform', `translate(${this.x(<any>this.now - (this.limit - 1) * this.duration)}, 0)`);;
   }
 
   updateData = (valueIn: number, valueOut: number) => {
