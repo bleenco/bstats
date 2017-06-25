@@ -1,6 +1,6 @@
 {
   "name": "bstats",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "Real-Time Server Statistics",
   "main": "./dist/server/index.js",
   "typings": "./dist/server/index.d.ts",

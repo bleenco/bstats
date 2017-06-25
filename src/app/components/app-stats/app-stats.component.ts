@@ -13,36 +13,46 @@ export class AppStatsComponent implements OnInit, OnDestroy {
   loadAvg15Min: { load: number, cores: number };
   netData: any[];
   cpuData: any[];
+  loaded: boolean;
 
-  constructor(private socket: SocketService) { }
+  constructor(private socket: SocketService) {
+    this.loaded = false;
+  }
 
   ngOnInit() {
     this.messages = this.socket.onMessage()
       .subscribe((output: { type: string, data: any }) => {
-      if (output.type === 'cpu') {
-        this.cpuData = output.data;
-        // this.loadAvg1Min = null;
-        // this.loadAvg5Min = null;
-        // this.loadAvg15Min = null;
+        setTimeout(() => this.loaded = true, 1000);
 
-        // setTimeout(() => {
-        //   this.loadAvg1Min = { load: data.message.load[0], cores: data.message.cores };
-        //   this.loadAvg5Min = { load: data.message.load[1], cores: data.message.cores };
-        //   this.loadAvg15Min = { load: data.message.load[2], cores: data.message.cores };
-        // });
-      } else if (output.type === 'network') {
-        if (!this.netData) {
-          this.netData = output.data;
-        } else {
-          this.netData.forEach((net, i) => {
-            setTimeout(() => {
-              this.netData[i].in = output.data[i].in;
-              this.netData[i].out = output.data[i].out;
-              this.netData[i].inSpeed = output.data[i].inSpeed;
-              this.netData[i].outSpeed = output.data[i].outSpeed;
+        if (output.type === 'cpu') {
+          this.cpuData = output.data;
+          // this.loadAvg1Min = null;
+          // this.loadAvg5Min = null;
+          // this.loadAvg15Min = null;
+
+          // setTimeout(() => {
+          //   this.loadAvg1Min = { load: data.message.load[0], cores: data.message.cores };
+          //   this.loadAvg5Min = { load: data.message.load[1], cores: data.message.cores };
+          //   this.loadAvg15Min = { load: data.message.load[2], cores: data.message.cores };
+          // });
+        } else if (output.type === 'network') {
+          if (!this.netData) {
+            this.netData = output.data;
+          } else {
+            this.netData.forEach((net, i) => {
+              this.netData[i].in = null;
+              this.netData[i].out = null;
+              this.netData[i].inSpeed = null;
+              this.netData[i].outSpeed = null;
+
+              setTimeout(() => {
+                this.netData[i].in = output.data[i].in;
+                this.netData[i].out = output.data[i].out;
+                this.netData[i].inSpeed = output.data[i].inSpeed;
+                this.netData[i].outSpeed = output.data[i].outSpeed;
+              });
             });
-          });
-        }
+          }
       }
     });
   }

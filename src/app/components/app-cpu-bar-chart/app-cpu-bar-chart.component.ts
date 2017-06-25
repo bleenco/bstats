@@ -17,7 +17,7 @@ export class AppCpuBarChartComponent implements OnInit, OnChanges {
 
   ngOnInit() {
     this.barChartEl = this.elementRef.nativeElement.querySelector('.bar-chart');
-    this.colors = ['#65DBFF', '#E9EAEC'];
+    this.colors = ['#2AFFED', '#484859'];
   }
 
   ngOnChanges() {
@@ -60,8 +60,9 @@ export class AppCpuBarChartComponent implements OnInit, OnChanges {
       .attr('x', (d: any) => x(100) / 2 - 20)
       .attr('y', barHeight / 2)
       .attr('dy', '-4')
-      .attr('stroke', '#666666')
-      .attr('stroke-width', 0.3)
+      .attr('stroke', '#E68945')
+      .attr('stroke-width', 1)
+      .attr('fill', 'none')
       .style('font-size', '10')
       .style('font-family', 'Verdana')
       .text((d: any) => `${d.total}%`);

@@ -29,35 +29,33 @@ export class AppNetworkLineChartComponent implements OnInit, OnChanges {
   limit: number;
   title: string;
   max: number;
+  loaded: boolean;
 
-  constructor(private elementRef: ElementRef) { }
+  constructor(private elementRef: ElementRef) {
+    this.loaded = false;
+  }
 
   ngOnInit() {
     this.limit = 20;
     this.duration = 2000;
     this.now = new Date(Date.now() - this.duration);
     this.render();
+    this.loaded = true;
   }
 
   ngOnChanges(changes: SimpleChanges) {
-    setTimeout(() => {
-      if (!this.iface) {
-        return;
-      }
+    if (!this.loaded || this.speedIn === null || this.speedOut === null) {
+      return;
+    }
 
-      if (!this.title) {
-        this.title = this.iface;
-      }
-
-      this.updateData(this.speedIn, this.speedOut);
-    });
+    this.updateData(this.speedIn, this.speedOut);
   }
 
   render() {
     this.lineChartEl = this.elementRef.nativeElement.querySelector('.line-chart');
 
-    let m = { top: 5, right: 5, bottom: 5, left: 5 };
-    let w = this.lineChartEl.clientWidth - 30;
+    let m = { top: 20, right: 0, bottom: 30, left: 0 };
+    let w = this.lineChartEl.clientWidth;
     let h = w - (w / 3);
 
     this.svg = d3.select(this.lineChartEl).append('svg')
@@ -78,22 +76,25 @@ export class AppNetworkLineChartComponent implements OnInit, OnChanges {
     this.x.domain([<any>this.now - (this.limit - 2), <any>this.now - this.duration]);
     this.y.domain([0, d3.max(this.dataIn.concat(this.dataOut), (d: any) => d)]);
 
-    this.xAxis = d3.axisBottom(this.x);
+    this.xAxis = d3.axisBottom(this.x)
+      .tickSizeInner(-h - 30)
+      .tickSizeOuter(0)
+      .tickPadding(10);
 
     this.yAxis = d3.axisLeft(this.y)
-      .tickSizeInner(-w - 100)
+      .tickSizeInner(-w)
       .tickSizeOuter(0)
       .tickPadding(10);
 
     this.xAxisEl = this.svg.append('g')
-      .attr('width', w - 40)
-      .attr('transform', `translate(0, ${h - 30})`)
-      .attr('class', 'xaxis')
+      .attr('width', w)
+      .attr('transform', `translate(0, ${h})`)
+      .attr('class', 'x axis')
       .call(this.xAxis);
 
     this.yAxisEl = this.svg.append('g')
-      .attr('width', w - 40)
-      .attr('class', 'yaxis')
+      .attr('width', w)
+      .attr('class', 'y axis')
       .call(this.yAxis);
 
     this.line = d3.line()
@@ -102,12 +103,12 @@ export class AppNetworkLineChartComponent implements OnInit, OnChanges {
       .curve(d3.curveBasis);
 
     this.pathIn = this.g.append('path')
-      .attr('stroke', '#3A84C5')
+      .attr('stroke', '#359b9c')
       .attr('stroke-width', '3')
       .attr('fill', 'transparent');
 
     this.pathOut = this.g.append('path')
-      .attr('stroke', '#6E7F9A')
+      .attr('stroke', '#925841')
       .attr('stroke-width', '3')
       .attr('fill', 'transparent');
   }
@@ -123,7 +124,7 @@ export class AppNetworkLineChartComponent implements OnInit, OnChanges {
     this.x.domain([<any>this.now - (this.limit - 2) * this.duration, <any>this.now - this.duration]);
     this.y.domain([0, this.max]);
 
-    d3.select(this.lineChartEl).select('.yaxis').remove();
+    d3.select(this.lineChartEl).select('.axis.y').remove();
 
     this.yAxis.ticks(5).tickFormat(this.getHumanSize);
 
@@ -133,8 +134,8 @@ export class AppNetworkLineChartComponent implements OnInit, OnChanges {
       .call(this.xAxis);
 
     this.yAxisEl = this.svg.append('g')
-      .attr('transform', 'translate(40, -35)')
-      .attr('class', 'yaxis')
+      .attr('transform', 'translate(60, 30)')
+      .attr('class', 'y axis')
       .call(this.yAxis);
 
     this.pathIn

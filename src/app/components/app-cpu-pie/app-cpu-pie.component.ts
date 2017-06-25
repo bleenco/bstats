@@ -24,7 +24,7 @@ export class AppCpuPieComponent implements OnInit, OnChanges {
 
   ngOnInit() {
     this.pieChartEl = this.elementRef.nativeElement.querySelector('.pie-chart-container');
-    this.colors = ['#65DBFF', '#E9EAEC', '#438FCC', '#88C340', '#DA031B', '#6E7F9A', '#FFC356', '#65DBFF', '#999999', '#666666'];
+    this.colors = ['#2AFFED', '#484859', '#438FCC', '#88C340', '#DA031B', '#6E7F9A', '#FFC356', '#65DBFF', '#999999', '#666666'];
   }
 
   ngOnChanges(changes: SimpleChanges) {
