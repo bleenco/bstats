@@ -30,7 +30,7 @@ export function getFilePath(relativePath: string): string {
   return join(getRootDir(), relativePath);
 }
 
-export function writeInitConfig(): Promise<null> {
+export function writeInitConfig(): Promise<void> {
   return fs.exists(getConfigPath())
     .then(exists => {
       if (exists) {

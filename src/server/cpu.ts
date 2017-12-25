@@ -5,7 +5,7 @@ import { IOutput } from './socket';
 export interface ICpuData {
   idle: number;
   total: number;
-  cores: Object[]
+  cores: { idle: number, total: number }[];
 }
 
 export function cpu(): Observable<IOutput> {
@@ -17,7 +17,7 @@ export function cpu(): Observable<IOutput> {
     });
 }
 
-function cpuLoad(): Promise<ICpuData> {
+function cpuLoad(): any {
   return new Promise(resolve => {
     let start = cpuAverage();
 

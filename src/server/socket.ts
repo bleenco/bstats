@@ -1,18 +1,18 @@
-import * as ws from 'ws';
-import { Observable, Observer, Subject } from 'rxjs';
-import { info } from './logger';
+import * as uws from 'uws';
+import { Observable, Observer, Subject, Subscription } from 'rxjs';
+import * as logger from './logger';
 import * as http from 'http';
 import * as https from 'https';
 import { readFileSync } from 'fs';
 import { network, INetworkIface } from './network';
 import { cpu, ICpuData } from './cpu';
 import { memory, IMemoryData } from './memory';
+import * as express from 'express';
+import { getConfig } from './utils';
+import * as querystring from 'querystring';
 
 export interface ISocketServerOptions {
-  port: number;
-  ssl: boolean;
-  sslKey?: string;
-  sslCert?: string;
+  app: express.Application;
 }
 
 export interface IOutput {
@@ -20,88 +20,81 @@ export interface IOutput {
   data: INetworkIface[] | ICpuData | IMemoryData;
 }
 
+export interface Client {
+  sessionID: string;
+  session: { cookie: any, ip: string, userId: number, email: string, isAdmin: boolean };
+  socket: uws.Socket;
+  send: Function;
+  subscriptions: { stats: Subscription };
+}
+
 export class SocketServer {
   options: ISocketServerOptions;
   connections: Observable<any>;
+  clients: Client[];
+  source: Observable<any>;
 
   constructor(options: ISocketServerOptions) {
     this.options = options;
+    this.clients = [];
+    this.source = Observable.merge(...[network(), cpu(), memory()]).share();
   }
 
-  start(): void {
-    this.connections = this.createRxServer(this.options)
-      .map(this.createRxSocket);
-
-    this.init();
-  }
-
-  init(): void {
-    let source = Observable.merge(...[network(), cpu(), memory()]);
-    let published = source.share();
-
-    this.connections.subscribe(conn => {
-      conn.next({ type: 'status', message: 'connected' });
-
-      let sub = published.subscribe((data: IOutput) => {
-        conn.next(data);
-      });
-
-      conn.subscribe(data => {
-        data = JSON.parse(data);
-
-        if (data.type === 'close') {
-          sub.unsubscribe();
-          conn.unsubscribe();
-        }
-      });
+  start(): Promise<void> {
+    return new Promise(resolve => {
+      this.setupServer(this.options.app);
     });
   }
 
-  private createRxServer = (options: ws.IServerOptions) => {
-    return new Observable((observer: Observer<any>) => {
-      info(`socket server running on port ${options.port} with SSL ${this.options.ssl}`);
-      let app: any;
+  private setupServer(application: any): void {
+    let config: any = getConfig();
+    let server = null;
 
-      if (this.options.ssl) {
-        app = https.createServer({
-          key: readFileSync(this.options.sslKey),
-          cert: readFileSync(this.options.sslCert)
-        }).listen(options.port);
-      } else {
-        app = http.createServer().listen(options.port);
-      }
+    if (config.ssl) {
+      server = https.createServer({
+        cert: readFileSync(config.sslCert),
+        key: readFileSync(config.sslKey)
+      }, application);
+    } else {
+      server = http.createServer(application);
+    }
 
-      let wss: ws.Server = new ws.Server({ server: app });
-      wss.on('connection', (client: any) => {
-        observer.next(client);
-        info(`socket client connected from ${client._socket.remoteAddress}:${client._socket.remotePort}`);
-      });
+    const wss: uws.Server = new uws.Server({
+      server: server
+    });
 
-      return () => {
-        wss.close();
+    wss.on('connection', socket => {
+      const client: Client = {
+        sessionID: socket.upgradeReq.sessionID,
+        session: socket.upgradeReq.session,
+        socket: socket,
+        send: (message: any) => client.socket.send(JSON.stringify(message)),
+        subscriptions: { stats: null }
       };
-    }).share();
+      this.addClient(client);
+      client.subscriptions.stats = this.source.subscribe(data => client.send(data));
+      socket.on('close', (code, message) => this.removeClient(socket));
+    });
+
+    server.listen(config.port, () => {
+      logger.info(`server running on port ${config.port}`)
+    });
   }
 
-  private createRxSocket = (connection: any) => {
-    let messages = Observable.fromEvent(connection, 'message' , msg => {
-      return typeof msg.data === 'string' ? msg.data : JSON.parse(msg.data);
-    }).merge(Observable.create(observer => {
-      connection.on('close', () => {
-        observer.next(JSON.stringify({ type: 'close' }));
-        connection.close();
-        info('socket client disconnected.');
-      });
-    }));
+  private addClient(client: Client): void {
+    this.clients.push(client);
+  }
 
-    let messageObserver: any = {
-      next(message) {
-        if (connection.readyState === 1) {
-          connection.send(JSON.stringify(message));
-        }
+  private removeClient(socket: uws.Socket): void {
+    const index = this.clients.findIndex(c => c.socket === socket);
+    const client = this.clients[index];
+
+    Object.keys(client.subscriptions).forEach(sub => {
+      if (client.subscriptions[sub]) {
+        client.subscriptions[sub].unsubscribe();
       }
-    };
+    });
 
-    return Subject.create(messageObserver, messages);
+    this.clients.splice(index, 1);
   }
 }

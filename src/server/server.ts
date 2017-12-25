@@ -10,16 +10,8 @@ export function start(): void {
   ensureDirectory(getRootDir())
     .then(() => writeInitConfig())
     .then(() => getConfig())
-    .then(config => {
+    .then((config: any) => {
       let app: express.Application = express();
-      let socketOpts: ISocketServerOptions = {
-        port: config.wsPort,
-        ssl: config.ssl,
-        sslKey: config.sslKey,
-        sslCert: config.sslCert
-      };
-      let socketServer = new SocketServer(socketOpts);
-
       app.use(cors());
       app.use('/css', express.static(resolve(__dirname, '../app/css'), { index: false }));
       app.use('/js', express.static(resolve(__dirname, '../app/js'), { index: false }));
@@ -27,7 +19,8 @@ export function start(): void {
       app.use('/css/fonts', express.static(resolve(__dirname, '../app/fonts'), { index: false }));
       app.all('/*', index);
 
-      app.listen(config.port, () => logger.info(`server running on port ${config.port}`));
+      let socketOpts: ISocketServerOptions = { app };
+      let socketServer = new SocketServer(socketOpts);
       socketServer.start();
     });
 }
